@@ -1,0 +1,21 @@
+{
+  "name": "NannyShare Calculator",
+  "short_name": "NannyShare",
+  "start_url": "/index.html",
+  "icons": [
+    {
+      "src": "/assets/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#4169e1",
+  "background_color": "#4169e1",
+  "display": "standalone",
+  "orientation": "portrait-primary"
+}

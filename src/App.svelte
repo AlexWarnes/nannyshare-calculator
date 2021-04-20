@@ -5,11 +5,21 @@
   import { saveAs } from "file-saver";
   import ImageReference32 from "carbon-icons-svelte/lib/ImageReference32";
   import Add32 from "carbon-icons-svelte/lib/Add32";
+  import { fade, draw } from "svelte/transition";
+  import { quintOut } from "svelte/easing";
 
   import { newDefaultCareEntry } from "./utilities";
   import { rates, childcare } from "./stores";
+  let adjustLayoutForImageCapture = false;
 
-  const handleAddNewEntryClick = (setName) => {
+  const scrollTargetIntoView = (event) => {
+    console.log("event", event);
+    event.target
+      .closest(".add-new")
+      .scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handleAddNewEntryClick = (event, setName) => {
     const prevSet = $childcare.find((set) => set.name === setName);
     const nextSet = {
       ...prevSet,
@@ -23,6 +33,8 @@
         return childcareSet;
       }
     });
+
+    scrollTargetIntoView(event);
   };
 
   const handleRemoveEntry = (event, setName) => {
@@ -43,14 +55,23 @@
   };
 
   const handleSaveImg = () => {
-    domtoimage.toBlob(document.getElementById("body")).then(function (blob) {
-      let time = new Date()
-        .toLocaleString()
-        .split(",")[0]
-        .replace("/", "-")
-        .replace("/", "-");
-      saveAs(blob, `NannyShareCosts_${time}.png`);
-    });
+    adjustLayoutForImageCapture = true;
+    domtoimage
+      .toBlob(document.getElementById("body"))
+      .then(function (blob) {
+        let time = new Date()
+          .toLocaleString()
+          .split(",")[0]
+          .replace("/", "-")
+          .replace("/", "-");
+        saveAs(blob, `NannyShareCosts_${time}.png`);
+      })
+      .finally(() => {
+        console.log("Complete");
+        setTimeout(() => {
+          adjustLayoutForImageCapture = false;
+        }, 1000);
+      });
   };
 
   $: {
@@ -81,6 +102,25 @@
   <img src="/assets/calculator.png" alt="Calculator" width="40" />
   <h1>NannyShare</h1>
 </header>
+{#if adjustLayoutForImageCapture}
+  <div class="saving-overlay" out:fade>
+    <svg
+      focusable="false"
+      preserveAspectRatio="xMidYMid meet"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      stroke="#fafafa"
+      width="64px"
+      height="64px"
+      viewBox="0 0 64 64"
+      aria-hidden="true"
+      ><path
+        in:draw
+        d="M7,31.36H1c-0.199,0-0.36-0.161-0.36-0.36v-6c0-0.199,0.161-0.36,0.36-0.36h6	c0.199,0,0.36,0.161,0.36,0.36v6C7.36,31.199,7.199,31.36,7,31.36z M1.36,30.64h5.28v-5.28H1.36V30.64z M31,28.36H11v-0.72h20V28.36	z M7,19.36H1c-0.199,0-0.36-0.161-0.36-0.36v-6c0-0.199,0.161-0.36,0.36-0.36h6c0.199,0,0.36,0.161,0.36,0.36v6	C7.36,19.199,7.199,19.36,7,19.36z M1.36,18.64h5.28v-5.28H1.36V18.64z M31,16.36H11v-0.72h20V16.36z M7,7.36H1	C0.801,7.36,0.64,7.199,0.64,7V1c0-0.199,0.161-0.36,0.36-0.36h6c0.199,0,0.36,0.161,0.36,0.36v6C7.36,7.199,7.199,7.36,7,7.36z M1.36,6.64h5.28V1.36H1.36V6.64z M31,4.36H11V3.64h20V4.36z"
+      /></svg
+    >
+  </div>
+{/if}
 <main>
   <Rates />
   <section class="care">
@@ -101,14 +141,14 @@
         {/each}
         <button
           class="add-new"
-          on:click={() => handleAddNewEntryClick(childcareSet.name)}
+          on:click={(event) => handleAddNewEntryClick(event, childcareSet.name)}
           ><Add32 style="transform: scale(.75)" />
         </button>
       </article>
     {/each}
   </section>
 </main>
-<footer class="flex sb">
+<footer class={`flex sb ${adjustLayoutForImageCapture ? null : "fixed"}`}>
   <h3>TOTAL COST: ${totalCost.toFixed(2)}</h3>
   <button on:click={handleSaveImg}
     ><ImageReference32 style="transform: scale(.75)" />Save</button
@@ -134,9 +174,6 @@
   }
 
   footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
     padding: 0 18px;
     width: 100%;
     max-width: 100%;
@@ -145,8 +182,30 @@
     color: #ffffff;
   }
 
+  footer.fixed {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+  }
+
   button.add-new {
     background: lightblue;
     width: 100%;
+  }
+
+  .saving-overlay {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-color: royalblue;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
   }
 </style>

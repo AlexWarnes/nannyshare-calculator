@@ -59,6 +59,7 @@
         bind:value={careEntry.hours}
         min="0"
         step=".25"
+        autofocus
       />
     </div>
     <div class="input-wrapper">

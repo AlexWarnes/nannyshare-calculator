@@ -12,18 +12,18 @@
   import { rates, childcare } from "./stores";
   let adjustLayoutForImageCapture = false;
 
-  const scrollTargetIntoView = (event) => {
-    console.log("event", event);
-    event.target
-      .closest(".add-new")
-      .scrollIntoView({ behavior: "smooth", block: "start" });
+  const scrollTargetIntoView = (elementID) => {
+    const ele = document.getElementById(elementID);
+    const rect = ele.getBoundingClientRect();
+    window.scrollBy({ behavior: "smooth", top: rect.top - 75 });
   };
 
   const handleAddNewEntryClick = (event, setName) => {
     const prevSet = $childcare.find((set) => set.name === setName);
+    const newCareEntry = newDefaultCareEntry();
     const nextSet = {
       ...prevSet,
-      careEntries: [...prevSet.careEntries, newDefaultCareEntry()],
+      careEntries: [...prevSet.careEntries, newCareEntry],
     };
 
     $childcare = $childcare.map((childcareSet) => {
@@ -34,7 +34,7 @@
       }
     });
 
-    scrollTargetIntoView(event);
+    setTimeout(() => scrollTargetIntoView(`hours-${newCareEntry.id}`), 150);
   };
 
   const handleRemoveEntry = (event, setName) => {
@@ -102,49 +102,33 @@
   <img src="/assets/calculator.png" alt="Calculator" width="40" />
   <h1>NannyShare</h1>
 </header>
-{#if adjustLayoutForImageCapture}
-  <div class="saving-overlay" out:fade>
-    <svg
-      focusable="false"
-      preserveAspectRatio="xMidYMid meet"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      stroke="#fafafa"
-      width="64px"
-      height="64px"
-      viewBox="0 0 64 64"
-      aria-hidden="true"
-      ><path
-        in:draw
-        d="M7,31.36H1c-0.199,0-0.36-0.161-0.36-0.36v-6c0-0.199,0.161-0.36,0.36-0.36h6	c0.199,0,0.36,0.161,0.36,0.36v6C7.36,31.199,7.199,31.36,7,31.36z M1.36,30.64h5.28v-5.28H1.36V30.64z M31,28.36H11v-0.72h20V28.36	z M7,19.36H1c-0.199,0-0.36-0.161-0.36-0.36v-6c0-0.199,0.161-0.36,0.36-0.36h6c0.199,0,0.36,0.161,0.36,0.36v6	C7.36,19.199,7.199,19.36,7,19.36z M1.36,18.64h5.28v-5.28H1.36V18.64z M31,16.36H11v-0.72h20V16.36z M7,7.36H1	C0.801,7.36,0.64,7.199,0.64,7V1c0-0.199,0.161-0.36,0.36-0.36h6c0.199,0,0.36,0.161,0.36,0.36v6C7.36,7.199,7.199,7.36,7,7.36z M1.36,6.64h5.28V1.36H1.36V6.64z M31,4.36H11V3.64h20V4.36z"
-      /></svg
-    >
-  </div>
-{/if}
 <main>
   <Rates />
   <section class="care">
     {#each $childcare as childcareSet (childcareSet.name)}
-      <article>
-        <div class="flex sb">
-          <h2>{childcareSet.name}</h2>
+      <form on:submit|preventDefault>
+        <article>
+          <div class="flex sb">
+            <h2>{childcareSet.name}</h2>
 
-          <span><strong>${childcareSet.cost.toFixed(2)}</strong></span>
-        </div>
-        {#each childcareSet.careEntries as careEntry (careEntry.id)}
-          <CareEntry
-            {careEntry}
-            childcareSetName={childcareSet.name}
-            on:removeEntry={(event) =>
-              handleRemoveEntry(event, childcareSet.name)}
-          />
-        {/each}
-        <button
-          class="add-new"
-          on:click={(event) => handleAddNewEntryClick(event, childcareSet.name)}
-          ><Add32 style="transform: scale(.75)" />
-        </button>
-      </article>
+            <span><strong>${childcareSet.cost.toFixed(2)}</strong></span>
+          </div>
+          {#each childcareSet.careEntries as careEntry (careEntry.id)}
+            <CareEntry
+              {careEntry}
+              childcareSetName={childcareSet.name}
+              on:removeEntry={(event) =>
+                handleRemoveEntry(event, childcareSet.name)}
+            />
+          {/each}
+          <button
+            class="add-new"
+            on:click={(event) =>
+              handleAddNewEntryClick(event, childcareSet.name)}
+            ><Add32 style="transform: scale(.75)" />
+          </button>
+        </article>
+      </form>
     {/each}
   </section>
 </main>

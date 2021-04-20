@@ -85,7 +85,7 @@ button:not(:disabled):active {
 }
 
 button:focus {
-  border-color: #fafbfc;
+  outline: 2px solid palevioletred;
 }
 
 .flex {

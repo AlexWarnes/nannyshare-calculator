@@ -65,9 +65,13 @@
           .replace("/", "-")
           .replace("/", "-");
         saveAs(blob, `NannyShareCosts_${time}.png`);
-      })
-      .finally(() => {
         console.log("Complete");
+        setTimeout(() => {
+          adjustLayoutForImageCapture = false;
+        }, 1000);
+      })
+      .catch((err) => {
+        console.log("Error");
         setTimeout(() => {
           adjustLayoutForImageCapture = false;
         }, 1000);
